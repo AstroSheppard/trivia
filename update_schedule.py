@@ -1,17 +1,9 @@
-# Tutorials at https://github.com/burnash/gspread
-### Currently updates Kyle's answer sheet, loop to do everyones
+import sys
 
 import pygsheets
-import sys
 import pandas as pd
 
-def access():
-    json='trivia-727e12dbc64c.json'
-    ### Get credentials/ authorize
-    gc=pygsheets.authorize(service_file='trivia-727e12dbc64c.json')
-    ### Read in entire sheet
-    sheet = gc.open("Trivia")
-    return sheet
+from get_functs import access
 
 def update_schedule(md):
     sheet=access()
@@ -39,5 +31,6 @@ def update_schedule(md):
     wks.set_dataframe(hold2,start2)
     wks.sync()
 
-md=sys.argv[1]
-update_schedule(md)
+if __name__ == "__main__":
+    md=sys.argv[1]
+    update_schedule(md)

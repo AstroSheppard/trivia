@@ -1,19 +1,22 @@
-import pygsheets
-import sys
-import re
-import pandas as pd
-import numpy as np
 from datetime import date, datetime
 import os.path
+import sys
 
+import pygsheets
+import numpy as np
+import re
+import pandas as pd
 
-def access():
-    json='trivia-727e12dbc64c.json'
-    ### Get credentials/ authorize
-    gc=pygsheets.authorize(service_file='trivia-727e12dbc64c.json')
-    ### Read in entire sheet
-    sheet = gc.open("Trivia")
-    return sheet
+from get_functs import access, get_player_answers, get_matchups, get_answers
+from get_functs import get_questions
+
+"""#def access():
+#    json='trivia-727e12dbc64c.json'
+#    ### Get credentials/ authorize
+#    gc=pygsheets.authorize(service_file='trivia-727e12dbc64c.json')
+#    ### Read in entire sheet
+#    sheet = gc.open("Trivia")
+#    return sheet
 
 # Function to read in answers for a player. Player will be index of player
 def get_player_answers(player):
@@ -38,7 +41,7 @@ def get_questions(s, md):
     template='./questions/ll{season}md{match}.csv'
     q=pd.read_csv(template.format(season=s, match=md))
     return q
-
+"""
 def correct(player, answer):
     right= [player.values[i].decode('utf-8').upper() ==
             answer.values[i].decode('utf-8') for i in range(len(answer))]
@@ -119,7 +122,7 @@ def write_qa(s, md, perc):
     wks.set_dataframe(total, start='J11')
     wks.unlink()
 
-    # at middlish spot, write cat - quest - answer - % right - % us right
+
 def get_perc(data, people):
     perc=pd.DataFrame([data[key+'_correct'].values for key in people])
     return perc.sum(axis=0)/float(len(perc))*100
@@ -143,7 +146,6 @@ def update_player(player, correct):
     green=(0,1,0,0)
     red=(1,.5,.5,0)
     white=(1,1,1,1)
-
 
     inputs=wks.get_as_df(start='B3',end='C8')
     wks.clear(start='B3', end='C8')
@@ -215,38 +217,39 @@ def update_standings(results):
 #########################################################################
 ################################# MAIN ##################################
 #########################################################################
+if __name__ == "__main__":
+    s=sys.argv[1]
+    md=sys.argv[2]
+    data=pd.DataFrame()
+    data['categories']=get_questions(s,md)['CATEGORY']
+    data['answers']=get_answers(s, md)['ANSWERS']
+    matchups=get_matchups(md)
+    done=set()
 
-s=sys.argv[1]
-md=sys.argv[2]
-data=pd.DataFrame()
-data['categories']=get_questions(s,md)['CATEGORY']
-data['answers']=get_answers(s, md)['ANSWERS']
-matchups=get_matchups(md)
-done=set()
+    for key in matchups:
+        if key not in done:
+            p1=get_player_answers(key)
+            data[key+'_ans']=p1['ANSWER']
+            data[key+'_pts']=p1['PTS']
+            data[key+'_correct']=correct(p1['ANSWER'], data['answers'])
+            p2=get_player_answers(matchups[key])
+            data[matchups[key]+'_ans']=p2['ANSWER']
+            data[matchups[key]+'_pts']=p2['PTS']
+            data[matchups[key]+'_correct']=correct(p2['ANSWER']
+                                                   ,data['answers'])
 
-for key in matchups:
-    if key not in done:
-        p1=get_player_answers(key)
-        data[key+'_ans']=p1['ANSWER']
-        data[key+'_pts']=p1['PTS']
-        data[key+'_correct']=correct(p1['ANSWER'], data['answers'])
-        p2=get_player_answers(matchups[key])
-        data[matchups[key]+'_ans']=p2['ANSWER']
-        data[matchups[key]+'_pts']=p2['PTS']
-        data[matchups[key]+'_correct']=correct(p2['ANSWER'], data['answers'])
-
-        win=determine_winner(data, matchups[key], key)
+            win=determine_winner(data, matchups[key], key)
+            
+            update_standings(win) 
+            update_player(key, data[key+'_correct'].values)
+            update_player(matchups[key], data[matchups[key]+'_correct'].values)
         
-        update_standings(win) 
-        update_player(key, data[key+'_correct'].values)
-        update_player(matchups[key], data[matchups[key]+'_correct'].values)
-        
-        done.add(matchups[key])
+            done.add(matchups[key])
      
-perc=get_perc(data, matchups)
-write_qa(s, md, perc)
+    perc=get_perc(data, matchups)
+    write_qa(s, md, perc)
 
-data=data.reindex(sorted(data.columns), axis=1)
-append_md(data,s, md)
+    data=data.reindex(sorted(data.columns), axis=1)
+    append_md(data,s, md)
 
 
