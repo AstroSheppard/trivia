@@ -31,11 +31,10 @@ if __name__ == "__main__":
     pc=[item+'_correct' for item in players]
     pr=[item+' Right' for item in players]
     pw=[item+' Wrong' for item in players]
-
     for i, cat in enumerate(data['categories'].values):
-        sub=data.iloc[i,:-1]
+        sub=data.iloc[i,:-1].apply(pd.to_numeric, errors='ignore')
         for j,name in enumerate(pc):
-            if sub.loc[name]:
+            if sub.loc[name] in [1, 'True']:
                 stats.loc[cat.strip(),pr[j]]+=1
             else:
                 stats.loc[cat.strip(),pw[j]]+=1

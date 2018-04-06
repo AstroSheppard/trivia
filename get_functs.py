@@ -18,9 +18,9 @@ def get_player_answers(player):
     wks.unlink()
     return ans
 
-def get_matchups(md):
+def get_matchups(our_md):
     df = pd.read_csv('schedule.csv')
-    matchups=df[df['Match Day'] == int(md)].to_dict(orient='records')[0]
+    matchups=df[df['Match Day'] == int(our_md)].to_dict(orient='records')[0]
     matchups.pop('Match Day')
     return matchups
 
