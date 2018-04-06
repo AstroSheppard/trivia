@@ -10,43 +10,11 @@ import pandas as pd
 from get_functs import access, get_player_answers, get_matchups, get_answers
 from get_functs import get_questions
 
-"""#def access():
-#    json='trivia-727e12dbc64c.json'
-#    ### Get credentials/ authorize
-#    gc=pygsheets.authorize(service_file='trivia-727e12dbc64c.json')
-#    ### Read in entire sheet
-#    sheet = gc.open("Trivia")
-#    return sheet
-
-# Function to read in answers for a player. Player will be index of player
-def get_player_answers(player):
-    sheet=access()
-    wks=sheet.worksheet_by_title(player)
-    ans=wks.get_as_df(start='B2',end='C8')
-    wks.unlink()
-    return ans
-
-def get_matchups(md):
-    df = pd.read_csv('schedule.csv')
-    matchups=df[df['Match Day'] == int(md)].to_dict(orient='records')[0]
-    matchups.pop('Match Day')
-    return matchups
-
-def get_answers(s, md):
-    template='./answers/ll{season}md{match}_answers.csv'
-    a=pd.read_csv(template.format(season=s, match=md))
-    return a
-
-def get_questions(s, md):
-    template='./questions/ll{season}md{match}.csv'
-    q=pd.read_csv(template.format(season=s, match=md))
-    return q
-"""
 def correct(player, answer):
     right= [player.values[i].decode('utf-8').upper() ==
             answer.values[i].decode('utf-8') for i in range(len(answer))]
     for i in range(len(right)):
-        if not right[i]:
+        if not right[i] and not player.values[i] == 'x':
             print 'Player Answer: ', player.values[i]
             print 'Answer: ', answer.values[i]
             right[i]=int(raw_input('Is this correct? '))
@@ -208,8 +176,8 @@ def update_standings(results):
             standings1.loc[standings1['NAME']==l,'L']+=1
         else:
             standings2.loc[standings2['NAME']==l,'L']+=1
-    standings1=standings1.sort_values('MP')
-    standings2=standings2.sort_values('MP')
+    standings1=standings1.sort_values('MP', ascending=False)
+    standings2=standings2.sort_values('MP', ascending=False)
     wks.set_dataframe(standings1, 'B1')
     wks.set_dataframe(standings2, 'B9')
     wks.sync()
@@ -220,10 +188,11 @@ def update_standings(results):
 if __name__ == "__main__":
     s=sys.argv[1]
     md=sys.argv[2]
+    our_md=sys.argv[3]
     data=pd.DataFrame()
     data['categories']=get_questions(s,md)['CATEGORY']
     data['answers']=get_answers(s, md)['ANSWERS']
-    matchups=get_matchups(md)
+    matchups=get_matchups(our_md)
     done=set()
 
     for key in matchups:

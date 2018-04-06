@@ -5,20 +5,20 @@ import pandas as pd
 
 from get_functs import access
 
-def update_schedule(md):
+def update_schedule(our_md):
     sheet=access()
     wks=sheet.worksheet_by_title('Schedule')
     wks.unlink()
-    test=wks.range('A2:I14')
-    start='A'+str(int(md)+1)
-    end='I'+str(int(md)+1)
+   # test=wks.range('A2:I14')
+    start='A'+str(int(our_md)+2)
+    end='I'+str(int(our_md)+2)
     hold=wks.get_as_df(start=start, end=end)
     wks.clear(start=start, end=end)
     row=start+':'+end
     cells=wks.range(row)[0]
 
-    start2='A'+str(int(md))
-    end2='I'+str(int(md))
+    start2='A'+str(int(our_md)+1)
+    end2='I'+str(int(our_md)+1)
     hold2=wks.get_as_df(start=start2, end=end2)
     wks.clear(start=start2, end=end2)
     row2=start2+':'+end2
@@ -32,5 +32,5 @@ def update_schedule(md):
     wks.sync()
 
 if __name__ == "__main__":
-    md=sys.argv[1]
-    update_schedule(md)
+    our_md=sys.argv[1]
+    update_schedule(our_md)
