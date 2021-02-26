@@ -5,9 +5,7 @@ import pandas as pd
 
 def access():
     """Authorize access to google sheet"""
-    json='trivia-727e12dbc64c.json'
     ### Get credentials/ authorize
-    gc=pygsheets.authorize(service_file='trivia-727e12dbc64c.json')
     ### Read in entire sheet
     sheet = gc.open("Trivia")
     return sheet
