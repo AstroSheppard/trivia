@@ -11,7 +11,7 @@ google-api-python-client==1.6.6
 httplib2==0.19.0
 idna==2.6
 ipaddress==1.0.19
-numpy==1.21
+numpy==1.22
 oauth2client==4.1.2
 pandas==0.22.0
 pyasn1==0.4.2
